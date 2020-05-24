@@ -93,6 +93,20 @@ For recognizing age and gender, OpenVINO pre-trained objec recognition model 'ag
 
 
 ```python
+def ag_recognition(input_roi, exec_net, input_blob):
+    # recognizing age and gender
+    preprocessed_roi = preprocess(input_roi, 62, 62)
+
+    output = exec_net.infer({input_blob: preprocessed_roi})
+
+    gender_list = ['female', 'male']
+
+    age = int(output['age_conv3'][0][0][0][0] * 100)
+    gender = gender_list[np.argmax(output['prob'][0,:,0,0])]
+
+    return age, gender
+
+
 # load age & gender recognition model
 ag_model_name = "age-gender-recognition-retail-0013"
 ag_model_bin = os.path.join(model_path, ag_model_name, "FP32", ag_model_name) + ".bin"
@@ -102,20 +116,6 @@ ag_net = ie.read_network(model=ag_model_xml, weights=ag_model_bin)
 ag_exec_net = ie.load_network(ag_net, "CPU")
 
 ag_input_blob = next(iter(ag_net.inputs))
-
-...
-
-
-            if conf >= 0.9:
-                ...
-
-                cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (255,0,0), 3)
-
-                roi = frame[ymin:ymax, xmin:xmax, :]
-
-                # recognizing age and gender
-                age, gender = ag_recognition(roi, ag_exec_net, ag_input_blob)
-
 ```
 
 
@@ -124,6 +124,16 @@ ag_input_blob = next(iter(ag_net.inputs))
 For recognizing emotion,  OpenVINO pre-trained objec recognition model 'emotions-recognition-retail-0003' is used. 'emotions-recognition-retail-0003' is able to recognize 5 emotions ('neutral', 'happy', 'sad', 'surprise', 'anger').
 
 ```python
+def em_recognition(input_roi, exec_net, input_blob):
+    # recognizing emotion
+    preprocessed_roi = preprocess(input_roi, 64, 64)
+
+    output = exec_net.infer({input_blob: preprocessed_roi})
+
+    emotions = ['neutral', 'happy', 'sad', 'surprise', 'anger']
+
+    return emotions[np.argmax(output['prob_emotion'][0,:,0,0])]
+
 # load emotion recognition model
 em_model_name = "emotions-recognition-retail-0003"
 em_model_bin = os.path.join(model_path, em_model_name, "FP32", em_model_name) + ".bin"
@@ -133,26 +143,10 @@ em_net = ie.read_network(model=em_model_xml, weights=em_model_bin)
 em_exec_net = ie.load_network(em_net, "CPU")
 
 em_input_blob = next(iter(em_net.inputs))
-
-...
-
-            if conf >= 0.9:
-                ...
-
-                cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (255,0,0), 3)
-
-                roi = frame[ymin:ymax, xmin:xmax, :]
-
-                # recognizing age and gender
-                age, gender = ag_recognition(roi, ag_exec_net, ag_input_blob)
-                
-                # recognizing emotion
-                emotion = em_recognition(roi, em_exec_net, em_input_blob)
 ```
 
 
 ## Result
-
 
 ![RESULT][image2]
 
